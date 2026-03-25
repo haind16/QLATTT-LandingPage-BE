@@ -1,9 +1,10 @@
 const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
+const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
 
 // ─────────────────────────────────────────
-// API 1: Nhận form đăng ký từ landing page
+// API 1: Nhận form đăng ký từ landing page (PUBLIC - KHÁCH HÀNG DÙNG)
 // POST /api/dang-ky
 // ─────────────────────────────────────────
 router.post('/', (req, res) => {
@@ -21,7 +22,6 @@ router.post('/', (req, res) => {
 
   // Kiểm tra thông tin bắt buộc
   if (!ho_ten || !so_dien_thoai) {
-    // Ghi log thất bại
     db.query(
       `INSERT INTO log (hanh_dong, dia_chi_ip) VALUES (?, ?)`,
       ['đăng ký thất bại — thiếu thông tin', ip]
@@ -78,10 +78,10 @@ router.post('/', (req, res) => {
 
 
 // ─────────────────────────────────────────
-// API 2: Xem toàn bộ danh sách đăng ký
+// API 2: Xem toàn bộ danh sách đăng ký (PRIVATE - CẦN ĐĂNG NHẬP)
 // GET /api/dang-ky/danh-sach
 // ─────────────────────────────────────────
-router.get('/danh-sach', (req, res) => {
+router.get('/danh-sach', verifyToken, (req, res) => {
   db.query(
     `SELECT * FROM khach_hang ORDER BY thoi_gian_dang_ky DESC`,
     (err, rows) => {
@@ -93,10 +93,10 @@ router.get('/danh-sach', (req, res) => {
 
 
 // ─────────────────────────────────────────
-// API 3: Xem log hệ thống
+// API 3: Xem log hệ thống (PRIVATE & ADMIN ONLY - CHỈ ADMIN MỚI ĐƯỢC XEM)
 // GET /api/dang-ky/log
 // ─────────────────────────────────────────
-router.get('/log', (req, res) => {
+router.get('/log', verifyToken, isAdmin, (req, res) => {
   db.query(
     `SELECT log.*, khach_hang.ho_ten, khach_hang.so_dien_thoai
      FROM log
@@ -111,10 +111,10 @@ router.get('/log', (req, res) => {
 
 
 // ─────────────────────────────────────────
-// API 4: Xem chi tiết 1 khách hàng
+// API 4: Xem chi tiết 1 khách hàng (PRIVATE - CẦN ĐĂNG NHẬP)
 // GET /api/dang-ky/:id
 // ─────────────────────────────────────────
-router.get('/:id', (req, res) => {
+router.get('/:id', verifyToken, (req, res) => {
   db.query(
     `SELECT * FROM khach_hang WHERE id = ?`,
     [req.params.id],

@@ -3,6 +3,8 @@ const express = require('express');
 const cors    = require('cors');
 
 const dangkyRoutes = require('./routes/dangky');
+const authRoutes = require('./routes/auth');
+const userRoutes   = require('./routes/user');
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.use(express.json());
 
 // Gắn các API vào
 app.use('/api/dang-ky', dangkyRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Kiểm tra server còn sống không
 app.get('/', (req, res) => {
